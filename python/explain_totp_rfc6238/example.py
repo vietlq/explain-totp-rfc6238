@@ -61,6 +61,5 @@ if __name__ == "__main__":
         )
 
     for counter in range(10):
-        print(
-            f"The HTOP value of the counter {counter} with 7 digits: {get_hotp(secret_bytes, counter, DigestAlgo.SHA1, digits=7)}"
-        )
+        value = get_hotp(secret_bytes, counter, DigestAlgo.SHA1, digits=7)
+        print(f"The HTOP value of the counter {counter} with 7 digits: {value}")
