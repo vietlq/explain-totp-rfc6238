@@ -20,5 +20,5 @@ from example import get_hotp, DigestAlgo
 )
 def test_get_hotp(secret_bytes, counter, digest_algo, expected):
     # Refer to https://tools.ietf.org/html/rfc4226
-    actual = get_hotp(secret_bytes, counter, digest_algo)
+    actual = get_hotp(secret_bytes=secret_bytes, counter=counter, digest_algo=digest_algo)
     assert actual == expected
