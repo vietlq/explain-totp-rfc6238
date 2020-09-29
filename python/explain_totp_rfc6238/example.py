@@ -1,6 +1,7 @@
 import hmac
 import hashlib
 import struct
+import time
 from binascii import hexlify, unhexlify
 from enum import Enum
 
@@ -18,7 +19,7 @@ DIGEST_ALGO_MAP = {
 }
 
 
-def get_hotp_impl(secret_bytes: bytes, counter: int, make_digest_fn, digits: int = 6) -> int:
+def get_hotp_impl(*, secret_bytes: bytes, counter: int, make_digest_fn, digits: int = 6) -> int:
     if digits < 5 and digits > 9:
         raise ValueError(f"Expected number of digits: 5-9. Actual: {digits}")
 
@@ -34,31 +35,48 @@ def get_hotp_impl(secret_bytes: bytes, counter: int, make_digest_fn, digits: int
     truncated = digest_res[offset : offset + 4]
     last_31bits = int(hexlify(truncated), 16) & 0x7FFFFFFF
 
-    htop_value = last_31bits % 10 ** digits
-    return htop_value
+    hotp_value = last_31bits % 10 ** digits
+    return hotp_value
 
 
-def get_hotp(secret_bytes: bytes, counter: int, digest_algo: DigestAlgo, digits: int = 6) -> str:
+def get_hotp(*, secret_bytes: bytes, counter: int, digest_algo: DigestAlgo, digits: int = 6) -> str:
     make_digest_fn = DIGEST_ALGO_MAP[digest_algo.value]
-    htop_value = get_hotp_impl(secret_bytes, counter, make_digest_fn, digits)
-    return f"{htop_value:0{digits}d}"
+    hotp_value = get_hotp_impl(secret_bytes=secret_bytes, counter=counter, make_digest_fn=make_digest_fn, digits=digits)
+    return f"{hotp_value:0{digits}d}"
 
 
-def get_totp_impl():
-    pass
+def get_totp_impl(
+    *,
+    unix_time: int,
+    secret_bytes: bytes,
+    digest_algo: DigestAlgo,
+    step_size: int = 30,
+    digits: int = 6,
+    base_time: int = 0,
+) -> str:
+    counter = (unix_time - base_time) // step_size
+    return get_hotp(secret_bytes=secret_bytes, counter=counter, digest_algo=digest_algo, digits=digits)
 
 
-def get_totp():
-    pass
+def get_totp(
+    *, secret_bytes: bytes, digest_algo: DigestAlgo, step_size: int = 30, digits: int = 6, base_time: int = 0
+) -> str:
+    unix_time = int(time.time())
+    return get_totp_impl(
+        unix_time=unix_time, secret_bytes=secret_bytes, digest_algo=digest_algo, step_size=step_size, digits=digits
+    )
 
 
 if __name__ == "__main__":
     secret_bytes = b"12345678901234567890"
 
     for counter in range(10):
-        value = get_hotp(secret_bytes, counter, DigestAlgo.SHA1)
-        print(f"The HTOP value of the counter {counter} with 6 digits: {value}")
+        value = get_hotp(secret_bytes=secret_bytes, counter=counter, digest_algo=DigestAlgo.SHA1)
+        print(f"The HOTP value of the counter {counter} with 6 digits: {value}")
 
     for counter in range(10):
-        value = get_hotp(secret_bytes, counter, DigestAlgo.SHA1, digits=7)
-        print(f"The HTOP value of the counter {counter} with 7 digits: {value}")
+        value = get_hotp(secret_bytes=secret_bytes, counter=counter, digest_algo=DigestAlgo.SHA1, digits=7)
+        print(f"The HOTP value of the counter {counter} with 7 digits: {value}")
+
+    value = get_totp(secret_bytes=secret_bytes, digest_algo=DigestAlgo.SHA1, digits=7)
+    print(f"The TOTP value with 7 digits: {value}")
