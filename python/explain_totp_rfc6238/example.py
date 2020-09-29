@@ -56,9 +56,8 @@ if __name__ == "__main__":
     secret_bytes = b"12345678901234567890"
 
     for counter in range(10):
-        print(
-            f"The HTOP value of the counter {counter} with 6 digits: {get_hotp(secret_bytes, counter, DigestAlgo.SHA1)}"
-        )
+        value = get_hotp(secret_bytes, counter, DigestAlgo.SHA1)
+        print(f"The HTOP value of the counter {counter} with 6 digits: {value}")
 
     for counter in range(10):
         value = get_hotp(secret_bytes, counter, DigestAlgo.SHA1, digits=7)
