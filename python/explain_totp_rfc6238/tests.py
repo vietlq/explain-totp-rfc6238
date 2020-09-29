@@ -2,7 +2,8 @@ import pytest
 from example import get_hotp, DigestAlgo
 
 
-@pytest.mark.parametrize("secret_bytes,counter,digest_algo,expected",
+@pytest.mark.parametrize(
+    "secret_bytes,counter,digest_algo,expected",
     [
         (b"12345678901234567890", 0, DigestAlgo.SHA1, "755224"),
         (b"12345678901234567890", 1, DigestAlgo.SHA1, "287082"),
@@ -15,7 +16,7 @@ from example import get_hotp, DigestAlgo
         (b"12345678901234567890", 8, DigestAlgo.SHA1, "399871"),
         (b"12345678901234567890", 9, DigestAlgo.SHA1, "520489"),
         (b"12345678901234567890", 30, DigestAlgo.SHA1, "026920"),
-    ]
+    ],
 )
 def test_get_hotp(secret_bytes, counter, digest_algo, expected):
     # Refer to https://tools.ietf.org/html/rfc4226
